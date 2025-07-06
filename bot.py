@@ -5,8 +5,8 @@ import asyncio
 from telegram import Bot
 
 # Zmienne środowiskowe (ustaw w GitHub Secrets: TOKEN i CHAT_ID)
-TOKEN = os.getenv('8082349732:AAFAYY8Y95yGUel8Ymnl84MpCEgpTUQ9L8k')
-CHAT_ID = os.getenv('7728443508')
+TOKEN = os.getenv('TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
 
 # Tworzymy instancję bota
 bot = Bot(token=TOKEN)
