@@ -69,4 +69,18 @@ async def main():
 
 # Uruchomienie funkcji głównej
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(main())import os
+import asyncio
+from telegram import Bot
+
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+
+bot = Bot(token=TOKEN)
+
+async def test():
+    await bot.send_message(chat_id=CHAT_ID, text="✅ Bot działa poprawnie z GitHub Actions!")
+
+if __name__ == "__main__":
+    asyncio.run(test())
+    
