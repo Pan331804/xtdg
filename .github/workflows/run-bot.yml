@@ -1,6 +1,10 @@
 name: Uruchamianie bota co 10 minut
 
-on:
+on:- name: Run bot script
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+      run: python bot.py
   schedule:
     - cron: '*/10 * * * *'  # co 10 minut
   workflow_dispatch:        # pozwala też uruchomić ręcznie w GitHub UI
