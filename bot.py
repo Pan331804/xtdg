@@ -69,7 +69,7 @@ async def main():
 
 # Uruchomienie funkcji głównej
 if __name__ == '__main__':
-    asyncio.run(main())import os
+    asyncio.run(main())
 import asyncio
 from telegram import Bot
 
