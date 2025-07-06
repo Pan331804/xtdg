@@ -4,6 +4,10 @@ import os
 import asyncio
 from telegram import Bot
 
+
+TOKEN = os.getenv("TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+
 # Twój token i chat_id
 TOKEN = '8082349732:AAFAYY8Y95yGUel8Ymnl84MpCEgpTUQ9L8k'
 CHAT_ID = '7728443508'
