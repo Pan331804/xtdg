@@ -3,14 +3,22 @@ from bs4 import BeautifulSoup, Tag
 import os
 import asyncio
 from telegram import Bot
+from telegram.error import BadRequest
 
 TOKEN = os.getenv('TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 
 bot = Bot(token=TOKEN)
+MAX_LENGTH = 4000  # Telegram limit z zapasem
 
 async def wyslij_telegrama(text):
-    await bot.send_message(chat_id=CHAT_ID, text=text)
+    # Dzielimy długie wiadomości na kawałki
+    for i in range(0, len(text), MAX_LENGTH):
+        chunk = text[i:i+MAX_LENGTH]
+        try:
+            await bot.send_message(chat_id=CHAT_ID, text=chunk)
+        except BadRequest as e:
+            print(f"Błąd wysyłania wiadomości: {e}")
 
 async def main():
     url = 'https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt='
@@ -50,11 +58,9 @@ async def main():
         print("Nie znaleziono elementu 'content'.")
 
     if nowe_linki:
-        # Budujemy wiadomość ze wszystkimi linkami
         message = "Znaleziono nowe linki:\n" + "\n".join(nowe_linki)
         await wyslij_telegrama(message)
 
-        # Dopisujemy nowe linki do pliku
         with open(Ogłoszenia_stare_file, 'a') as f:
             for link in nowe_linki:
                 f.write(link + '\n')
