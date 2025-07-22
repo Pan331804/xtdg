@@ -4,18 +4,14 @@ import os
 import asyncio
 from telegram import Bot
 
-# Zmienne środowiskowe (ustaw w GitHub Secrets: TOKEN i CHAT_ID)
 TOKEN = os.getenv('TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 
-# Tworzymy instancję bota
 bot = Bot(token=TOKEN)
 
-# Funkcja asynchroniczna do wysyłania wiadomości
 async def wyslij_telegrama(text):
     await bot.send_message(chat_id=CHAT_ID, text=text)
 
-# Funkcja główna
 async def main():
     url = 'https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt='
     BASE_URL = 'https://www.tarnowiak.pl'
@@ -30,7 +26,6 @@ async def main():
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Wczytanie stare linki
     Ogłoszenia_stare_file = 'Ogłoszenia_linki_stare.txt'
     if os.path.exists(Ogłoszenia_stare_file):
         with open(Ogłoszenia_stare_file, 'r') as f:
@@ -49,19 +44,20 @@ async def main():
                 if href and isinstance(href, str):
                     full_url = href if href.startswith('http') else BASE_URL + href
                     if full_url not in Ogłoszenia_stare:
-                        await wyslij_telegrama(f"Znaleziono nowy link: {full_url}")
-                        await asyncio.sleep(1)  # ⏱️ opóźnienie, żeby uniknąć flood limitu
                         nowe_linki.append(full_url)
                         Ogłoszenia_stare.add(full_url)
     else:
         print("Nie znaleziono elementu 'content'.")
 
-    # Zapisz nowe linki do pliku
     if nowe_linki:
+        # Budujemy wiadomość ze wszystkimi linkami
+        message = "Znaleziono nowe linki:\n" + "\n".join(nowe_linki)
+        await wyslij_telegrama(message)
+
+        # Dopisujemy nowe linki do pliku
         with open(Ogłoszenia_stare_file, 'a') as f:
             for link in nowe_linki:
                 f.write(link + '\n')
 
-# Uruchomienie funkcji głównej
 if __name__ == '__main__':
     asyncio.run(main())
