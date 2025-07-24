@@ -1,16 +1,16 @@
 - name: Run bot script (codziennie 6:00–22:59 PL)
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: |
-          date
-          HOUR=$(TZ=Europe/Warsaw date +"%H")
+  env:
+    TOKEN: ${{ secrets.TOKEN }}
+    CHAT_ID: ${{ secrets.CHAT_ID }}
+  run: |
+    date
+    HOUR=$(TZ=Europe/Warsaw date +"%H")
 
-          echo "Aktualna godzina (Warszawa): $HOUR"
+    echo "Aktualna godzina (Warszawa): $HOUR"
 
-          if [ "$HOUR" -ge 6 ] && [ "$HOUR" -le 22 ]; then
-            echo "✅ W dozwolonym czasie – uruchamiam bota"
-            python bot.py
-          else
-            echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
-          fi
+    if [ "$HOUR" -ge 6 ] && [ "$HOUR" -le 22 ]; then
+      echo "✅ W dozwolonym czasie – uruchamiam bota"
+      python3 bot.py
+    else
+      echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
+    fi
