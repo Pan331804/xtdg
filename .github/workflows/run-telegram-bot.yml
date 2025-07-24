@@ -1,18 +1,22 @@
-- name: Run bot script (tylko dni robocze 6:00–23:59 PL)
-  env:
-    TOKEN: ${{ secrets.TOKEN }}
-    CHAT_ID: ${{ secrets.CHAT_ID }}
-  run: |
-    export TZ=Europe/Warsaw
-    HOUR=$(date +"%H")
-    DOW=$(date +"%u")  # 1 = pon, 7 = niedz.
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run bot script (tylko dni robocze 6:00–23:59 PL)
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          export TZ=Europe/Warsaw
+          HOUR=$(date +"%H")
+          DOW=$(date +"%u")  # 1 = pon, 7 = niedz.
 
-    echo "Aktualna godzina: $HOUR"
-    echo "Dzień tygodnia: $DOW"
+          echo "Aktualna godzina: $HOUR"
+          echo "Dzień tygodnia: $DOW"
 
-    if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 24 ]; then
-      echo "✅ W dozwolonym czasie – uruchamiam bota"
-      python bot.py
-    else
-      echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
-    fi
+          if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 24 ]; then
+            echo "✅ W dozwolonym czasie – uruchamiam bota"
+            python bot.py
+          else
+            echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
+          fi
