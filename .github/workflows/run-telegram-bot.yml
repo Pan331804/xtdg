@@ -1,13 +1,6 @@
-name: Run Bot on Workdays 6:00–23:59 PL
-
-on:
-  schedule:
-    - cron: '0 * * * *'  # uruchom co godzinę na 00 minut
-
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -17,7 +10,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Install dependencies manually
         run: |
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4
@@ -29,7 +22,7 @@ jobs:
         run: |
           export TZ=Europe/Warsaw
           HOUR=$(date +"%H")
-          DOW=$(date +"%u")  # 1 = pon, 7 = niedz.
+          DOW=$(date +"%u")
 
           echo "Aktualna godzina: $HOUR"
           echo "Dzień tygodnia: $DOW"
