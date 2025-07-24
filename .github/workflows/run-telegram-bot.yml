@@ -1,7 +1,22 @@
+name: Run Bot on Workdays 6:00–23:59 PL
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # uruchom co godzinę o pełnej godzinie
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
       - name: Run bot script (tylko dni robocze 6:00–23:59 PL)
         env:
           TOKEN: ${{ secrets.TOKEN }}
