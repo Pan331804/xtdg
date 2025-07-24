@@ -53,15 +53,11 @@ def check_announcements():
                 print("⚠️ Błąd przy przetwarzaniu ogłoszenia:", e)
 
 def main():
-    while True:
-        print(f"🔄 Sprawdzanie ogłoszeń: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        try:
-            check_announcements()
-        except Exception as e:
-            print("❌ Błąd w głównej pętli:", e)
-
-        # Odczekaj 30 minut (1800 sekund)
-        time.sleep(1800)
+    print(f"🔄 Sprawdzanie ogłoszeń: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    try:
+        check_announcements()
+    except Exception as e:
+        print("❌ Błąd w głównej funkcji:", e)
 
 if __name__ == "__main__":
     main()
