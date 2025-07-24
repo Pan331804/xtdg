@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import os
-import time
 
 # Pobierz token i chat_id z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
@@ -29,35 +28,3 @@ def check_announcements():
     teraz = datetime.now()
 
     for ogloszenie in ogloszenia:
-        data_div = ogloszenie.find('div', class_='box_content_date')
-        if data_div and 'dzisiaj' in data_div.text.lower():
-            try:
-                godzina_str = data_div.text.split(",")[1].strip()
-                godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-
-                ogloszenie_datetime = teraz.replace(
-                    hour=godzina_obj.hour,
-                    minute=godzina_obj.minute,
-                    second=0,
-                    microsecond=0
-                )
-
-                roznica = teraz - ogloszenie_datetime
-
-                # Sprawdź, czy ogłoszenie jest nie starsze niż 35 minut
-                if timedelta(minutes=0) <= roznica <= timedelta(minutes=35):
-                    message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
-                    send_telegram_message(message)
-
-            except Exception as e:
-                print("⚠️ Błąd przy przetwarzaniu ogłoszenia:", e)
-
-def main():
-    print(f"🔄 Sprawdzanie ogłoszeń: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    try:
-        check_announcements()
-    except Exception as e:
-        print("❌ Błąd w głównej funkcji:", e)
-
-if __name__ == "__main__":
-    main()
