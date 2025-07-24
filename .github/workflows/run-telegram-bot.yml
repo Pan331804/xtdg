@@ -2,7 +2,7 @@ name: Run Bot on Workdays 6:00–23:59 PL
 
 on:
   schedule:
-    - cron: '0 * * * *'  # uruchom co godzinę o pełnej godzinie
+    - cron: '0 * * * *'  # uruchom co godzinę na 00 minut
 
 jobs:
   run-bot:
@@ -16,6 +16,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
       - name: Run bot script (tylko dni robocze 6:00–23:59 PL)
         env:
