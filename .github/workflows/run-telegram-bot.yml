@@ -1,16 +1,12 @@
-- name: Run bot script (codziennie 6:00–22:59 PL)
-  env:
-    TOKEN: ${{ secrets.TOKEN }}
-    CHAT_ID: ${{ secrets.CHAT_ID }}
-  run: |
-    date
-    HOUR=$(TZ=Europe/Warsaw date +"%H")
+name: Run every 30 minutes
 
-    echo "Aktualna godzina (Warszawa): $HOUR"
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # co 30 minut, każdego dnia, całego tygodnia
 
-    if [ "$HOUR" -ge 6 ] && [ "$HOUR" -le 22 ]; then
-      echo "✅ W dozwolonym czasie – uruchamiam bota"
-      python3 bot.py
-    else
-      echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
-    fi
+jobs:
+  example_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run script or command
+        run: echo "Działa co 30 minut, przez cały tydzień!"
