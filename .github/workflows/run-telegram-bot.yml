@@ -2,7 +2,7 @@ name: Check Announcements
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # co 5 minut
+    - cron: '*/5 4-20 * * *'   # co 5 minut od 4:00 do 20:59 UTC (czyli 6:00-22:59 Polska latem)
   workflow_dispatch:
 
 jobs:
