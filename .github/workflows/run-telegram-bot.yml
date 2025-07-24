@@ -1,36 +1,10 @@
-name: Run Telegram Bot
-
-on:
-  push:
-    branches:
-      - main       # lub inna Twoja główna gałąź
-  schedule:
-    - cron: "*/30 4-20 * * *"
-  workflow_dispatch:
-
-jobs:
-  run-bot:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run bot script (codziennie 6:00–22:59 PL)
+- name: Run bot script (codziennie 6:00–22:59 PL)
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
           export TZ=Europe/Warsaw
+          date
           HOUR=$(date +"%H")
 
           echo "Aktualna godzina: $HOUR"
