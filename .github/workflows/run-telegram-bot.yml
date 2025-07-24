@@ -2,7 +2,8 @@ name: Check Announcements
 
 on:
   schedule:
-    - cron: '*/5 1-23 * * 1-5'   # Co 5 minut, godziny 1:00-23:59 UTC, pon–pt
+    - cron: '*/20 6-20 * * 1-5'  # Co 20 minut, 08:00–22:00 czasu PL, pon–pt
+  workflow_dispatch:             # Ręczne uruchamianie z GitHub UI
 
 jobs:
   run_job:
