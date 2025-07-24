@@ -1,12 +1,13 @@
-name: Run every 5 minutes
+name: Example workflow
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # co 5 minut przez cały tydzień
+    - cron: '*/5 * * * *'   # co 5 minut, cały tydzień, weekendy też
+  workflow_dispatch:        # umożliwia uruchomienie ręczne
 
 jobs:
-  example_job:
+  run_job:
     runs-on: ubuntu-latest
     steps:
-      - name: Run script or command
-        run: echo "Działa co 5 minut, przez cały tydzień!"
+      - name: Test run
+        run: echo "Workflow działa!"
