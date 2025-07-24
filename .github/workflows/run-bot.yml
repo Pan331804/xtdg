@@ -1,9 +1,8 @@
-
 name: Run Telegram Bot
 
 on:
   schedule:
-    - cron: "*/15 * * * *"  # uruchamia co 30 minut
+    - cron: "*/15 * * * *"  # uruchamia co 15 minut
   workflow_dispatch:        # pozwala też uruchomić ręcznie z GitHub
 
 jobs:
