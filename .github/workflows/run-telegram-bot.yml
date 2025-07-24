@@ -3,7 +3,7 @@ name: Check Announcements
 on:
   schedule:
     - cron: '*/5 * * * *'   # co 5 minut
-  workflow_dispatch:        # ręczne uruchomienie
+  workflow_dispatch:
 
 jobs:
   run_job:
@@ -22,7 +22,7 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Run Python script
-        run: python script.py
+        run: python bot.py
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
