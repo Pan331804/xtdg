@@ -1,12 +1,12 @@
-name: Run every 30 minutes
+name: Run every 5 minutes
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # co 30 minut, każdego dnia, całego tygodnia
+    - cron: '*/5 * * * *'  # co 5 minut przez cały tydzień
 
 jobs:
   example_job:
     runs-on: ubuntu-latest
     steps:
       - name: Run script or command
-        run: echo "Działa co 30 minut, przez cały tydzień!"
+        run: echo "Działa co 5 minut, przez cały tydzień!"
