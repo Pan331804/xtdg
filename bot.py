@@ -1,11 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo  # wymaga Python 3.9+
 import os
 
 # Pobierz token i chat_id z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
+
+# Ustawiamy strefę czasową Polski
+POLAND_TZ = ZoneInfo("Europe/Warsaw")
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -25,7 +29,7 @@ def check_announcements():
     soup = BeautifulSoup(response.text, 'html.parser')
     ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
 
-    teraz = datetime.now()
+    teraz = datetime.now(POLAND_TZ)  # teraz w polskiej strefie
 
     for ogloszenie in ogloszenia:
         data_div = ogloszenie.find('div', class_='box_content_date')
@@ -34,6 +38,7 @@ def check_announcements():
                 godzina_str = data_div.text.split(",")[1].strip()
                 godzina_obj = datetime.strptime(godzina_str, "%H:%M")
 
+                # tworzymy datetime ogłoszenia z polską strefą
                 ogloszenie_datetime = teraz.replace(
                     hour=godzina_obj.hour,
                     minute=godzina_obj.minute,
@@ -51,7 +56,8 @@ def check_announcements():
                 print("⚠️ Błąd przy przetwarzaniu ogłoszenia:", e)
 
 def main():
-    print(f"🔄 Sprawdzanie ogłoszeń: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    teraz = datetime.now(POLAND_TZ)
+    print(f"🔄 Sprawdzanie ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S')}")
     try:
         check_announcements()
     except Exception as e:
