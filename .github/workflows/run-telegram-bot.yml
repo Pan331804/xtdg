@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
       - name: Install dependencies
         run: pip install requests beautifulsoup4
-      - name: Run bot only on workdays 5-20 PL
+
+      - name: Run bot only on workdays 5–20 PL
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
@@ -24,8 +27,10 @@ jobs:
           HOUR=$(date +'%H')
           DOW=$(date +'%u')
           echo "Godzina (PL): $HOUR, Dzień tygodnia: $DOW"
+
           if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 5 ] && [ "$HOUR" -lt 21 ]; then
             echo "Uruchamiam bota"
             python bot.py
           else
             echo "Poza godzinami pracy, pomijam"
+          fi
