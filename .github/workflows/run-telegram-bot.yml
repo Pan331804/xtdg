@@ -3,11 +3,10 @@
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          export TZ=Europe/Warsaw
           date
-          HOUR=$(date +"%H")
+          HOUR=$(TZ=Europe/Warsaw date +"%H")
 
-          echo "Aktualna godzina: $HOUR"
+          echo "Aktualna godzina (Warszawa): $HOUR"
 
           if [ "$HOUR" -ge 6 ] && [ "$HOUR" -le 22 ]; then
             echo "✅ W dozwolonym czasie – uruchamiam bota"
