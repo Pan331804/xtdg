@@ -2,7 +2,7 @@ name: Run Telegram Bot
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # uruchamia co 30 minut
+    - cron: "*/10 * * * *"  # co 10 minut
   workflow_dispatch:        # pozwala też uruchomić ręcznie z GitHub
 
 jobs:
@@ -22,21 +22,8 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run bot script (tylko dni robocze 6:00–15:00 PL)
+      - name: Run bot script
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: |
-          export TZ=Europe/Warsaw
-          HOUR=$(date +"%H")
-          DOW=$(date +"%u")  # 1 = pon, 7 = niedz.
-
-          echo "Aktualna godzina: $HOUR"
-          echo "Dzień tygodnia: $DOW"
-
-          if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 15 ]; then
-            echo "✅ W dozwolonym czasie – uruchamiam bota"
-            python bot.py
-          else
-            echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
-          fi
+        run: python bot.py
