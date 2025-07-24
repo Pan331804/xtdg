@@ -1,13 +1,28 @@
-name: Example workflow
+name: Check Announcements
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # co 5 minut, cały tydzień, weekendy też
-  workflow_dispatch:        # umożliwia uruchomienie ręczne
+    - cron: '*/5 * * * *'   # co 5 minut
+  workflow_dispatch:        # ręczne uruchomienie
 
 jobs:
   run_job:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Test run
-        run: echo "Workflow działa!"
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run Python script
+        run: python script.py
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
