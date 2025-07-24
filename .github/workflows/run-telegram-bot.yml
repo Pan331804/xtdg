@@ -3,7 +3,7 @@ name: Run Bot Simple
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0,20,40 5-20 * * 1-5'  # Co 20 minut od 5:00 do 20:40 w dni robocze (pon-pt)
 
 jobs:
   run-bot:
@@ -15,7 +15,7 @@ jobs:
           python-version: '3.x'
       - name: Install dependencies
         run: pip install requests beautifulsoup4
-      - name: Run bot only on workdays 6-23 PL
+      - name: Run bot only on workdays 5-20 PL
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
@@ -24,9 +24,8 @@ jobs:
           HOUR=$(date +'%H')
           DOW=$(date +'%u')
           echo "Godzina (PL): $HOUR, Dzień tygodnia: $DOW"
-          if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 24 ]; then
+          if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 5 ] && [ "$HOUR" -lt 21 ]; then
             echo "Uruchamiam bota"
             python bot.py
           else
             echo "Poza godzinami pracy, pomijam"
-          fi
