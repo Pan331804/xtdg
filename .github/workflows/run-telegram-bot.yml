@@ -1,35 +1,32 @@
+name: Run Bot Simple
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-
-      - name: Install dependencies manually
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
-
-      - name: Run bot script (tylko dni robocze 6:00–23:59 PL)
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+      - name: Run bot only on workdays 6-23 PL
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
           export TZ=Europe/Warsaw
-          HOUR=$(date +"%H")
-          DOW=$(date +"%u")
-
-          echo "Aktualna godzina: $HOUR"
-          echo "Dzień tygodnia: $DOW"
-
+          HOUR=$(date +'%H')
+          DOW=$(date +'%u')
+          echo "Godzina (PL): $HOUR, Dzień tygodnia: $DOW"
           if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 24 ]; then
-            echo "✅ W dozwolonym czasie – uruchamiam bota"
+            echo "Uruchamiam bota"
             python bot.py
           else
-            echo "⛔ Poza dozwolonymi godzinami – pomijam uruchomienie"
+            echo "Poza godzinami pracy, pomijam"
           fi
