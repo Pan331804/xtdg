@@ -2,22 +2,21 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-
+import pytz  # dodaj to
 
 TELEGRAM_TOKEN = os.environ['TOKEN']
 CHAT_ID = os.environ['CHAT_ID']
 
 def send_telegram_message(text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"  # Poprawione
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": CHAT_ID,
         "text": text,
-        "parse_mode": "HTML"  # opcjonalnie, żeby mieć formatowanie
+        "parse_mode": "HTML"
     }
     response = requests.post(url, data=payload)
     if response.status_code != 200:
         print("Błąd wysyłania wiadomości:", response.text)
-
 
 strona = requests.get('https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt=')
 strona.raise_for_status()
@@ -27,7 +26,9 @@ ogloszenia_div = soup.find_all('div', class_='box_content_plain')
 ogloszenia_div_premium = soup.find_all('div', class_='box_content_featured')
 wszystkie_ogloszenia = ogloszenia_div_premium + ogloszenia_div
 
-teraz = datetime.now()
+# 🕒 Dodajemy strefę czasową Europe/Warsaw
+warsaw = pytz.timezone("Europe/Warsaw")
+teraz = datetime.now(warsaw)
 
 for ogloszenie in wszystkie_ogloszenia:
     data_div = ogloszenie.find('div', class_='box_content_date')
@@ -37,7 +38,7 @@ for ogloszenie in wszystkie_ogloszenia:
             try:
                 godzina_str = text.split(",")[1].strip()
                 godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-                godzina_obj = godzina_obj.replace(year=teraz.year, month=teraz.month, day=teraz.day)
+                godzina_obj = warsaw.localize(godzina_obj.replace(year=teraz.year, month=teraz.month, day=teraz.day))
 
                 roznica = teraz - godzina_obj
                 roznica_minut = roznica.total_seconds() / 60
