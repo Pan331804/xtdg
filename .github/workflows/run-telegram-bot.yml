@@ -1,9 +1,9 @@
 name: Run Telegram Bot
 
 on:
-  workflow_dispatch:   # pozwala ręcznie uruchomić workflow
+  workflow_dispatch:
   schedule:
-    - cron: '*/30 * * * *'  # uruchamiaj co 30 minut (możesz zmienić)
+    - cron: '*/30 * * * *'
 
 jobs:
   run-bot:
@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4
+          pip install -r requirements.txt  # <--- to jest kluczowe!
 
       - name: Run bot script
         run: python bot.py
