@@ -54,8 +54,8 @@ def check_announcements():
                 except Exception as e:
                     print("⚠️ Błąd parsowania godziny:", e)
 
-    # Sortowanie malejąco: najnowsze ogłoszenia najpierw
-    ogloszenia.sort(reverse=True)
+    # Sortowanie rosnąco, najstarsze najpierw (opcjonalne)
+    ogloszenia.sort()
 
     for ogloszenie_datetime, godzina_str in ogloszenia:
         roznica = teraz - ogloszenie_datetime
