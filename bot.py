@@ -33,14 +33,15 @@ def check_announcements():
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, 'html.parser')
-    ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
+    raw_ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
 
     teraz = datetime.now(POLAND_TZ)
     print(f"🔄 Teraz: {teraz} (typ: {type(teraz)})")
 
     limit = timedelta(minutes=30)
+    ogloszenia = []
 
-    for ogloszenie in ogloszenia:
+    for ogloszenie in raw_ogloszenia:
         data_div = ogloszenie.find('div', class_='box_content_date')
         if data_div and 'dzisiaj' in data_div.text.lower():
             parts = data_div.text.lower().split(",")
@@ -49,20 +50,23 @@ def check_announcements():
                 try:
                     godzina_obj = datetime.strptime(godzina_str, "%H:%M")
                     ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
-                    roznica = teraz - ogloszenie_datetime
-
-                    print(f"🕒 Ogłoszenie: {ogloszenie_datetime} (typ: {type(ogloszenie_datetime)})")
-                    print(f"➡️ Różnica: {roznica} (typ: {type(roznica)}), limit: {limit}")
-
-                    if timedelta(seconds=0) <= roznica < limit:
-                        print("✅ Różnica mniejsza niż 30 minut — wysyłamy.")
-                        message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
-                        send_telegram_message(message)
-                    else:
-                        print("⛔ Różnica ≥ 30 min lub ujemna — nie wysyłamy.")
-
+                    ogloszenia.append((ogloszenie_datetime, godzina_str))
                 except Exception as e:
-                    print("⚠️ Błąd parsowania ogłoszenia:", e)
+                    print("⚠️ Błąd parsowania godziny:", e)
+
+    # Sortowanie malejąco: najnowsze ogłoszenia najpierw
+    ogloszenia.sort(reverse=True)
+
+    for ogloszenie_datetime, godzina_str in ogloszenia:
+        roznica = teraz - ogloszenie_datetime
+        print(f"🕒 Ogłoszenie: {ogloszenie_datetime} ➡️ Różnica: {roznica}, limit: {limit}")
+
+        if timedelta(seconds=0) <= roznica < limit:
+            print("✅ Różnica < 30 minut — wysyłamy.")
+            message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
+            send_telegram_message(message)
+        else:
+            print("⛔ Różnica ≥ 30 min lub ujemna — pomijamy.")
 
 def main():
     teraz = datetime.now(POLAND_TZ)
