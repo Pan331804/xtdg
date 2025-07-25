@@ -36,11 +36,11 @@ def check_announcements():
     raw_ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
 
     teraz = datetime.now(POLAND_TZ)
-    print(f"🕒 Teraz: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    print(f"🔄 Teraz: {teraz.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    limit = timedelta(minutes=30)
-    max_age = timedelta(hours=1)
-    sent_links = set()
+    limit = timedelta(minutes=30)      # ogłoszenia tylko z ostatnich 30 minut
+    max_age = timedelta(hours=1)       # ignorujemy starsze niż 1h
+    sent_links = set()                 # zapamiętane linki tylko w RAM (na jedno uruchomienie)
     ogloszenia = []
 
     for ogloszenie in raw_ogloszenia:
@@ -53,13 +53,10 @@ def check_announcements():
                 godzina_str = parts[1].strip()
                 try:
                     godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-                    # Poprawne ustawienie strefy czasowej przez replace:
-                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time()).replace(tzinfo=POLAND_TZ)
-
+                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
                     link = link_tag['href'].strip()
                     if not link.startswith("http"):
                         link = "https://www.tarnowiak.pl" + link
-
                     ogloszenia.append((ogloszenie_datetime, godzina_str, link))
                 except Exception as e:
                     print("⚠️ Błąd parsowania godziny:", e)
@@ -68,27 +65,25 @@ def check_announcements():
 
     for ogloszenie_datetime, godzina_str, link in ogloszenia:
         roznica = teraz - ogloszenie_datetime
-
-        # DEBUG: wypisz szczegóły czasu i różnicę
-        print(f"DEBUG -> teraz: {teraz} ({teraz.tzinfo}), ogloszenie_datetime: {ogloszenie_datetime} ({ogloszenie_datetime.tzinfo}), roznica: {roznica}")
+        print(f"🕒 {godzina_str} | Ogłoszenie: {ogloszenie_datetime}, Różnica: {roznica}")
 
         if timedelta(seconds=0) <= roznica <= max_age:
             if roznica <= limit:
                 if link not in sent_links:
-                    print("✅ Wysyłamy nowe ogłoszenie.")
+                    print("✅ Ogłoszenie nowe i świeże — wysyłamy.")
                     message = f"🆕 Nowe ogłoszenie z {godzina_str}:\n{link}"
                     send_telegram_message(message)
                     sent_links.add(link)
                 else:
-                    print("ℹ️ Już wysłane w tej sesji.")
+                    print(f"ℹ️ Ogłoszenie już było w tej sesji — pomijam.")
             else:
-                print("⛔ Zbyt stare (>30 minut), pomijam.")
+                print("⛔ Ogłoszenie nie jest już świeże (powyżej 30 min) — pomijam.")
         else:
-            print("⛔ Zbyt stare (>1h) lub z przyszłości — pomijam.")
+            print("⛔ Ogłoszenie za stare (>1h) lub z przyszłości — pomijam.")
 
 def main():
     teraz = datetime.now(POLAND_TZ)
-    print(f"📡 Start o {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    print(f"📡 Start sprawdzania ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     try:
         check_announcements()
     except Exception as e:
