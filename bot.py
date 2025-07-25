@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import os
 import sys
 
+# Pobieranie TOKEN i CHAT_ID z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
@@ -15,6 +16,7 @@ if not TOKEN or not CHAT_ID:
 POLAND_TZ = ZoneInfo("Europe/Warsaw")
 
 def send_telegram_message(message):
+    """Wysyła wiadomość do Telegrama."""
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     params = {
         "chat_id": CHAT_ID,
@@ -27,6 +29,7 @@ def send_telegram_message(message):
         print("✅ Wiadomość wysłana poprawnie.")
 
 def check_announcements():
+    """Sprawdza ogłoszenia na stronie i wysyła powiadomienia o nowych."""
     url = 'https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt='
     headers = {"User-Agent": "Mozilla/5.0 (compatible; Bot/1.0)"}
     response = requests.get(url, headers=headers)
@@ -54,7 +57,7 @@ def check_announcements():
                 except Exception as e:
                     print("⚠️ Błąd parsowania godziny:", e)
 
-    # Sortowanie rosnąco, najstarsze najpierw (opcjonalne)
+    # Sortowanie rosnąco, najstarsze najpierw
     ogloszenia.sort()
 
     for ogloszenie_datetime, godzina_str in ogloszenia:
@@ -69,6 +72,7 @@ def check_announcements():
             print("⛔ Różnica ≥ 30 min lub ujemna — pomijamy.")
 
 def main():
+    """Główna funkcja uruchamiająca sprawdzanie ogłoszeń."""
     teraz = datetime.now(POLAND_TZ)
     print(f"🔄 Sprawdzanie ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     try:
