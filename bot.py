@@ -13,7 +13,6 @@ if not TOKEN or not CHAT_ID:
     sys.exit(1)
 
 POLAND_TZ = ZoneInfo("Europe/Warsaw")
-# Usuwamy plik do zapisywania wysłanych ogłoszeń (bo nie działał)
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -49,4 +48,32 @@ def check_announcements():
             if len(parts) > 1:
                 godzina_str = parts[1].strip()
                 try:
-                    godzina_obj = datetime.strptime(godzina_str, "%
+                    godzina_obj = datetime.strptime(godzina_str, "%H:%M")
+                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
+                    ogloszenia.append((ogloszenie_datetime, godzina_str))
+                except Exception as e:
+                    print("⚠️ Błąd parsowania godziny:", e)
+
+    ogloszenia.sort()
+
+    for ogloszenie_datetime, godzina_str in ogloszenia:
+        roznica = teraz - ogloszenie_datetime
+        print(f"🕒 Ogłoszenie: {ogloszenie_datetime} ➡️ Różnica: {roznica}, limit: {limit}")
+
+        if timedelta(seconds=0) <= roznica < limit:
+            print("✅ Różnica < 30 minut — wysyłamy.")
+            message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
+            send_telegram_message(message)
+        else:
+            print("⛔ Różnica ≥ 30 min lub ujemna — pomijamy.")
+
+def main():
+    teraz = datetime.now(POLAND_TZ)
+    print(f"🔄 Sprawdzanie ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    try:
+        check_announcements()
+    except Exception as e:
+        print("❌ Błąd:", e)
+
+if __name__ == "__main__":
+    main()
