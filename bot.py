@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 import os
 import sys
 
-# Pobieranie tokenu i chat_id z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
@@ -14,18 +13,7 @@ if not TOKEN or not CHAT_ID:
     sys.exit(1)
 
 POLAND_TZ = ZoneInfo("Europe/Warsaw")
-SENT_FILE = "sent_announcements.txt"
-
-def load_sent():
-    if not os.path.exists(SENT_FILE):
-        return set()
-    with open(SENT_FILE, "r") as f:
-        return set(line.strip() for line in f.readlines())
-
-def save_sent(sent_set):
-    with open(SENT_FILE, "w") as f:
-        for item in sent_set:
-            f.write(item + "\n")
+# Usuwamy plik do zapisywania wysłanych ogłoszeń (bo nie działał)
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -49,60 +37,16 @@ def check_announcements():
     raw_ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
 
     teraz = datetime.now(POLAND_TZ)
-    print(f"🔄 Teraz: {teraz.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"🔄 Teraz: {teraz} (typ: {type(teraz)})")
 
-    limit = timedelta(minutes=30)      # maksymalny czas od publikacji do wysyłki
-    max_age = timedelta(hours=1)       # nie wysyłamy ogłoszeń starszych niż 1h
-    sent = load_sent()
+    limit = timedelta(minutes=30)
     ogloszenia = []
 
     for ogloszenie in raw_ogloszenia:
         data_div = ogloszenie.find('div', class_='box_content_date')
-        link_tag = ogloszenie.find('a', href=True)
-
-        if data_div and link_tag and 'dzisiaj' in data_div.text.lower():
+        if data_div and 'dzisiaj' in data_div.text.lower():
             parts = data_div.text.lower().split(",")
             if len(parts) > 1:
                 godzina_str = parts[1].strip()
                 try:
-                    godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
-                    link = link_tag['href'].strip()
-                    if not link.startswith("http"):
-                        link = "https://www.tarnowiak.pl" + link
-                    ogloszenia.append((ogloszenie_datetime, godzina_str, link))
-                except Exception as e:
-                    print("⚠️ Błąd parsowania godziny:", e)
-
-    ogloszenia.sort()
-
-    for ogloszenie_datetime, godzina_str, link in ogloszenia:
-        roznica = teraz - ogloszenie_datetime
-        print(f"🕒 {godzina_str} | Ogłoszenie: {ogloszenie_datetime}, Różnica: {roznica}")
-
-        if timedelta(seconds=0) <= roznica <= max_age:
-            if roznica <= limit:
-                if link not in sent:
-                    print("✅ Ogłoszenie nowe i świeże — wysyłamy.")
-                    message = f"🆕 Nowe ogłoszenie z {godzina_str}:\n{link}"
-                    send_telegram_message(message)
-                    sent.add(link)
-                else:
-                    print(f"ℹ️ Ogłoszenie z linkiem {link} już wysłane — pomijam.")
-            else:
-                print("⛔ Ogłoszenie nie jest już świeże (powyżej 30 min) — pomijam.")
-        else:
-            print("⛔ Ogłoszenie za stare (>1h) lub z przyszłości — pomijam.")
-
-    save_sent(sent)
-
-def main():
-    teraz = datetime.now(POLAND_TZ)
-    print(f"📡 Start sprawdzania ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-    try:
-        check_announcements()
-    except Exception as e:
-        print("❌ Błąd:", e)
-
-if __name__ == "__main__":
-    main()
+                    godzina_obj = datetime.strptime(godzina_str, "%
