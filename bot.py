@@ -52,36 +52,40 @@ def check_announcements():
 
     limit = timedelta(minutes=30)
     ogloszenia = []
-
     sent = load_sent()
 
     for ogloszenie in raw_ogloszenia:
         data_div = ogloszenie.find('div', class_='box_content_date')
-        if data_div and 'dzisiaj' in data_div.text.lower():
+        link_tag = ogloszenie.find('a', href=True)
+
+        if data_div and link_tag and 'dzisiaj' in data_div.text.lower():
             parts = data_div.text.lower().split(",")
             if len(parts) > 1:
                 godzina_str = parts[1].strip()
                 try:
                     godzina_obj = datetime.strptime(godzina_str, "%H:%M")
                     ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
-                    ogloszenia.append((ogloszenie_datetime, godzina_str))
+                    link = link_tag['href'].strip()
+                    if not link.startswith("http"):
+                        link = "https://www.tarnowiak.pl" + link
+                    ogloszenia.append((ogloszenie_datetime, godzina_str, link))
                 except Exception as e:
                     print("⚠️ Błąd parsowania godziny:", e)
 
     ogloszenia.sort()
 
-    for ogloszenie_datetime, godzina_str in ogloszenia:
+    for ogloszenie_datetime, godzina_str, link in ogloszenia:
         roznica = teraz - ogloszenie_datetime
         print(f"🕒 Ogłoszenie: {ogloszenie_datetime} ➡️ Różnica: {roznica}, limit: {limit}")
 
         if timedelta(seconds=0) <= roznica < limit:
-            if godzina_str not in sent:
+            if link not in sent:
                 print("✅ Różnica < 30 minut i nowe ogłoszenie — wysyłamy.")
-                message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
+                message = f"🆕 Nowe ogłoszenie z {godzina_str}:\n{link}"
                 send_telegram_message(message)
-                sent.add(godzina_str)
+                sent.add(link)
             else:
-                print(f"ℹ️ Ogłoszenie z {godzina_str} już wysłane — pomijam.")
+                print(f"ℹ️ Ogłoszenie z linkiem {link} już wysłane — pomijam.")
         else:
             print("⛔ Różnica ≥ 30 min lub ujemna — pomijamy.")
 
