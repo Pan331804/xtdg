@@ -1,38 +1,23 @@
-name: Run Tarnowiak Bot
+name: Ogłoszenia Tarnów
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '*/20 5-20 * * 1-5'  # Co 20 minut w dni robocze 05:00–20:59 czasu PL
+    - cron: "*/10 * * * *"  # co 10 minut
+  workflow_dispatch:
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-
+    env:
+      TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup Python
+      - name: Ustaw Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: pip install requests beautifulsoup4
-
-      - name: Run bot only in Poland time range
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: |
-          export TZ=Europe/Warsaw
-          HOUR=$(date +'%H')
-          DOW=$(date +'%u')  # 1–7 (1=Mon, 7=Sun)
-          echo "Godzina (PL): $HOUR, Dzień tygodnia: $DOW"
-
-          if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 5 ] && [ "$HOUR" -lt 21 ]; then
-            echo "✅ Uruchamiam bota"
-            python bot.py
-          else
-            echo "⛔ Poza godzinami pracy — pomijam"
-          fi
+          python-version: "3.11"
+      - name: Zainstaluj zależności
+        run: pip install beautifulsoup4 requests
+      - name: Uruchom bota
+        run: python bot.py
