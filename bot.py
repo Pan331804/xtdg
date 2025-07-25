@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 import os
 import sys
 
-# Telegram token i chat_id z GitHub Secrets
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
@@ -54,9 +53,8 @@ def check_announcements():
                 godzina_str = parts[1].strip()
                 try:
                     godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-                    ogloszenie_datetime = datetime.combine(
-                        teraz.date(), godzina_obj.time()
-                    ).replace(tzinfo=POLAND_TZ)
+                    # Poprawne ustawienie strefy czasowej przez replace:
+                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time()).replace(tzinfo=POLAND_TZ)
 
                     link = link_tag['href'].strip()
                     if not link.startswith("http"):
@@ -70,7 +68,9 @@ def check_announcements():
 
     for ogloszenie_datetime, godzina_str, link in ogloszenia:
         roznica = teraz - ogloszenie_datetime
-        print(f"📌 {godzina_str} | Różnica: {roznica} | Link: {link}")
+
+        # DEBUG: wypisz szczegóły czasu i różnicę
+        print(f"DEBUG -> teraz: {teraz} ({teraz.tzinfo}), ogloszenie_datetime: {ogloszenie_datetime} ({ogloszenie_datetime.tzinfo}), roznica: {roznica}")
 
         if timedelta(seconds=0) <= roznica <= max_age:
             if roznica <= limit:
