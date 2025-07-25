@@ -3,11 +3,14 @@ name: Run Bot Simple
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0,20,40 5-20 * * 1-5'  # Co 20 minut od 5:00 do 20:40 w dni robocze (pon-pt)
+    # Co 20 minut od 5:00 do 20:40 czasu letniego w Polsce (CEST = UTC+2)
+    # W UTC to godziny 3:00 - 18:40
+    - cron: '0,20,40 3-18 * * 1-5'
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -18,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Run bot only on workdays 5–20 PL
+      - name: Run bot only on workdays 5–20 PL time
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
