@@ -1,11 +1,9 @@
-name: Run Bot Simple
+name: Run Tarnowiak Bot
 
 on:
   workflow_dispatch:
   schedule:
-    # Co 20 minut od 5:00 do 20:40 czasu letniego w Polsce (CEST = UTC+2)
-    # W UTC to godziny 3:00 - 18:40
-    - cron: '0,20,40 3-18 * * 1-5'
+    - cron: '*/20 5-20 * * 1-5'  # Co 20 minut w dni robocze 05:00–20:59 czasu PL
 
 jobs:
   run-bot:
@@ -14,26 +12,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Run bot only on workdays 5–20 PL time
+      - name: Run bot only in Poland time range
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
           export TZ=Europe/Warsaw
           HOUR=$(date +'%H')
-          DOW=$(date +'%u')
+          DOW=$(date +'%u')  # 1–7 (1=Mon, 7=Sun)
           echo "Godzina (PL): $HOUR, Dzień tygodnia: $DOW"
 
           if [ "$DOW" -le 5 ] && [ "$HOUR" -ge 5 ] && [ "$HOUR" -lt 21 ]; then
-            echo "Uruchamiam bota"
+            echo "✅ Uruchamiam bota"
             python bot.py
           else
-            echo "Poza godzinami pracy, pomijam"
+            echo "⛔ Poza godzinami pracy — pomijam"
           fi
