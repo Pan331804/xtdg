@@ -1,79 +1,53 @@
+import os
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
-import os
-import sys
+from datetime import datetime
 
-TOKEN = os.environ.get("TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
 
-if not TOKEN or not CHAT_ID:
-    print("❌ Brak TOKEN lub CHAT_ID w zmiennych środowiskowych!")
-    sys.exit(1)
+TELEGRAM_TOKEN = os.environ['TOKEN']
+CHAT_ID = os.environ['CHAT_ID']
 
-POLAND_TZ = ZoneInfo("Europe/Warsaw")
-
-def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    params = {
+def send_telegram_message(text):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"  # Poprawione
+    payload = {
         "chat_id": CHAT_ID,
-        "text": message
+        "text": text,
+        "parse_mode": "HTML"  # opcjonalnie, żeby mieć formatowanie
     }
-    response = requests.get(url, params=params)
+    response = requests.post(url, data=payload)
     if response.status_code != 200:
-        print(f"❌ Błąd wysyłania wiadomości: {response.status_code} - {response.text}")
-    else:
-        print("✅ Wiadomość wysłana poprawnie.")
+        print("Błąd wysyłania wiadomości:", response.text)
 
-def check_announcements():
-    url = 'https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt='
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; Bot/1.0)"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    raw_ogloszenia = soup.find_all('div', class_='box_content_plain') + soup.find_all('div', class_='box_content_featured')
+strona = requests.get('https://www.tarnowiak.pl/szukaj/?ctg=31&p=1&q=&pf=&pt=')
+strona.raise_for_status()
 
-    teraz = datetime.now(POLAND_TZ)
-    print(f"🔄 Teraz: {teraz} (typ: {type(teraz)})")
+soup = BeautifulSoup(strona.text, 'html.parser')
+ogloszenia_div = soup.find_all('div', class_='box_content_plain')
+ogloszenia_div_premium = soup.find_all('div', class_='box_content_featured')
+wszystkie_ogloszenia = ogloszenia_div_premium + ogloszenia_div
 
-    limit = timedelta(minutes=30)
-    ogloszenia = []
+teraz = datetime.now()
 
-    for ogloszenie in raw_ogloszenia:
-        data_div = ogloszenie.find('div', class_='box_content_date')
-        if data_div and 'dzisiaj' in data_div.text.lower():
-            parts = data_div.text.lower().split(",")
-            if len(parts) > 1:
-                godzina_str = parts[1].strip()
-                try:
-                    godzina_obj = datetime.strptime(godzina_str, "%H:%M")
-                    ogloszenie_datetime = datetime.combine(teraz.date(), godzina_obj.time(), POLAND_TZ)
-                    ogloszenia.append((ogloszenie_datetime, godzina_str))
-                except Exception as e:
-                    print("⚠️ Błąd parsowania godziny:", e)
+for ogloszenie in wszystkie_ogloszenia:
+    data_div = ogloszenie.find('div', class_='box_content_date')
+    if data_div:
+        text = data_div.text.lower()
+        if "dzisiaj" in text:
+            try:
+                godzina_str = text.split(",")[1].strip()
+                godzina_obj = datetime.strptime(godzina_str, "%H:%M")
+                godzina_obj = godzina_obj.replace(year=teraz.year, month=teraz.month, day=teraz.day)
 
-    ogloszenia.sort()
+                roznica = teraz - godzina_obj
+                roznica_minut = roznica.total_seconds() / 60
 
-    for ogloszenie_datetime, godzina_str in ogloszenia:
-        roznica = teraz - ogloszenie_datetime
-        print(f"🕒 Ogłoszenie: {ogloszenie_datetime} ➡️ Różnica: {roznica}, limit: {limit}")
+                if 0 <= roznica_minut <= 30:
+                    msg = f"Nowe ogłoszenie z dzisiaj o {godzina_str} — jest maksymalnie 30 minut starsze."
+                    print(msg)
+                    send_telegram_message(msg)
+                else:
+                    print(f"Ogłoszenie z {godzina_str} jest starsze niż 30 minut lub z przyszłości.")
 
-        if timedelta(seconds=0) <= roznica < limit:
-            print("✅ Różnica < 30 minut — wysyłamy.")
-            message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
-            send_telegram_message(message)
-        else:
-            print("⛔ Różnica ≥ 30 min lub ujemna — pomijamy.")
-
-def main():
-    teraz = datetime.now(POLAND_TZ)
-    print(f"🔄 Sprawdzanie ogłoszeń: {teraz.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-    try:
-        check_announcements()
-    except Exception as e:
-        print("❌ Błąd:", e)
-
-if __name__ == "__main__":
-    main()
+            except (IndexError, ValueError):
+                print("Błąd parsowania godziny w tekście:", text)
