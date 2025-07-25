@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import os
 import sys
 
+# Pobranie tokena i chat_id z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
@@ -12,6 +13,7 @@ if not TOKEN or not CHAT_ID:
     print("❌ Brak TOKEN lub CHAT_ID w zmiennych środowiskowych!")
     sys.exit(1)
 
+# Strefa czasowa Polski
 POLAND_TZ = ZoneInfo("Europe/Warsaw")
 
 def send_telegram_message(message):
@@ -46,18 +48,22 @@ def check_announcements():
             if len(parts) > 1:
                 godzina_str = parts[1].strip()
                 try:
+                    # Parsowanie godziny
                     godzina_obj = datetime.strptime(godzina_str, "%H:%M")
 
-                    ogloszenie_datetime = teraz.replace(
-                        hour=godzina_obj.hour,
-                        minute=godzina_obj.minute,
-                        second=0,
-                        microsecond=0
+                    # Tworzenie datetime ogłoszenia z dzisiejszą datą i polską strefą
+                    ogloszenie_datetime = datetime.combine(
+                        teraz.date(),
+                        godzina_obj.time(),
+                        POLAND_TZ
                     )
 
                     roznica = teraz - ogloszenie_datetime
 
-                    if timedelta(minutes=0) <= roznica <= timedelta(minutes=35):
+                    print(f"🕒 Ogłoszenie: {ogloszenie_datetime}, Teraz: {teraz}, Różnica: {roznica}")
+
+                    # Tylko ogłoszenia z ostatnich 30 minut
+                    if timedelta(minutes=0) <= roznica <= timedelta(minutes=30):
                         message = f"🆕 Nowe ogłoszenie z {godzina_str}:\nhttps://www.tarnowiak.pl/szukaj/?ctg=31"
                         send_telegram_message(message)
 
