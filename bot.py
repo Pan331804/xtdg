@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import os
 import sys
 
+# Pobieranie tokenu i chat_id z zmiennych środowiskowych
 TOKEN = os.environ.get("TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
@@ -13,6 +14,18 @@ if not TOKEN or not CHAT_ID:
     sys.exit(1)
 
 POLAND_TZ = ZoneInfo("Europe/Warsaw")
+SENT_FILE = "sent_announcements.txt"
+
+def load_sent():
+    if not os.path.exists(SENT_FILE):
+        return set()
+    with open(SENT_FILE, "r") as f:
+        return set(line.strip() for line in f.readlines())
+
+def save_sent(sent_set):
+    with open(SENT_FILE, "w") as f:
+        for item in sent_set:
+            f.write(item + "\n")
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -38,9 +51,9 @@ def check_announcements():
     teraz = datetime.now(POLAND_TZ)
     print(f"🔄 Teraz: {teraz.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    limit = timedelta(minutes=30)      # ogłoszenia tylko z ostatnich 30 minut
-    max_age = timedelta(hours=1)       # ignorujemy starsze niż 1h
-    sent_links = set()                 # zapamiętane linki tylko w RAM (na jedno uruchomienie)
+    limit = timedelta(minutes=30)      # maksymalny czas od publikacji do wysyłki
+    max_age = timedelta(hours=1)       # nie wysyłamy ogłoszeń starszych niż 1h
+    sent = load_sent()
     ogloszenia = []
 
     for ogloszenie in raw_ogloszenia:
@@ -69,17 +82,19 @@ def check_announcements():
 
         if timedelta(seconds=0) <= roznica <= max_age:
             if roznica <= limit:
-                if link not in sent_links:
+                if link not in sent:
                     print("✅ Ogłoszenie nowe i świeże — wysyłamy.")
                     message = f"🆕 Nowe ogłoszenie z {godzina_str}:\n{link}"
                     send_telegram_message(message)
-                    sent_links.add(link)
+                    sent.add(link)
                 else:
-                    print(f"ℹ️ Ogłoszenie już było w tej sesji — pomijam.")
+                    print(f"ℹ️ Ogłoszenie z linkiem {link} już wysłane — pomijam.")
             else:
                 print("⛔ Ogłoszenie nie jest już świeże (powyżej 30 min) — pomijam.")
         else:
             print("⛔ Ogłoszenie za stare (>1h) lub z przyszłości — pomijam.")
+
+    save_sent(sent)
 
 def main():
     teraz = datetime.now(POLAND_TZ)
