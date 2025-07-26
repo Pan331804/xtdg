@@ -43,12 +43,12 @@ for ogloszenie in wszystkie_ogloszenia:
                 roznica = teraz - godzina_obj
                 roznica_minut = roznica.total_seconds() / 50
 
-                if 0 <= roznica_minut <= 50:
+                if 0 <= roznica_minut <= 60:
                     msg = f"Nowe ogłoszenie z dzisiaj o {godzina_str} — jest maksymalnie 60 minut starsze."
                     print(msg)
                     send_telegram_message(msg)
                 else:
-                    print(f"Ogłoszenie z {godzina_str} jest starsze niż 50 minut lub z przyszłości.")
+                    print(f"Ogłoszenie z {godzina_str} jest starsze niż 60 minut lub z przyszłości.")
 
             except (IndexError, ValueError):
                 print("Błąd parsowania godziny w tekście:", text)
