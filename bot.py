@@ -41,14 +41,14 @@ for ogloszenie in wszystkie_ogloszenia:
                 godzina_obj = warsaw.localize(godzina_obj.replace(year=teraz.year, month=teraz.month, day=teraz.day))
 
                 roznica = teraz - godzina_obj
-                roznica_minut = roznica.total_seconds() / 60
+                roznica_minut = roznica.total_seconds() / 50
 
-                if 0 <= roznica_minut <= 40:
-                    msg = f"Nowe ogłoszenie z dzisiaj o {godzina_str} — jest maksymalnie 40 minut starsze."
+                if 0 <= roznica_minut <= 50:
+                    msg = f"Nowe ogłoszenie z dzisiaj o {godzina_str} — jest maksymalnie 60 minut starsze."
                     print(msg)
                     send_telegram_message(msg)
                 else:
-                    print(f"Ogłoszenie z {godzina_str} jest starsze niż 40 minut lub z przyszłości.")
+                    print(f"Ogłoszenie z {godzina_str} jest starsze niż 50 minut lub z przyszłości.")
 
             except (IndexError, ValueError):
                 print("Błąd parsowania godziny w tekście:", text)
